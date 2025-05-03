@@ -6,17 +6,14 @@ namespace Ophura
     {
         private const int PixelCount = 4 * 4;
 
-        private static string ControllerFilename { get; } = "Assets/Projection.controller";
-        private static string InfluenceParameter { get; } = "Influence";
-        private static string SemaphoreParameter { get; } = "Semaphore";
+        private static string TensionParameter { get; } = "T";
+        private static string QueueParameter { get; } = "Q";
 
-        private static string[] PropertyNames { get; } = { "R", "G", "B" };
+        private static string[] Channels { get; } = { "R", "G", "B" };
 
-        private static AnimationCurve MinValue { get; } = AnimationCurve.Linear(0F, 0F, 0.01F, 0F);
-        private static AnimationCurve MaxValue { get; } = AnimationCurve.Linear(0F, 1F, 0.01F, 1F);
-
-        internal static Vector3 EntryPosition { get; } = new(-280F, -100F, 0F);
-        internal static Vector3 AnyStatePosition { get; } = new(20F, -100F, 0F);
-        internal static Vector3 ExitPosition { get; } = new(320F, -100F, 0F);
+        private static Vector3 ParentStateMachinePosition { get; } = new(350F, 50F, 0F);
+        private static Vector3 EntryNodePosition { get; } = new(10F, 0F, 0F);
+        private static Vector3 AnyStateNodePosition { get; } = new(370F, 0F, 0F);
+        private static Vector3 ExitNodePosition { get; } = new(730F, 0F, 0F);
     }
 }
