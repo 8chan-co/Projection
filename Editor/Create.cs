@@ -53,7 +53,7 @@ namespace Ophura
             {
                 string Identifier = $"{PixelIndex:X4}";
 
-                for (int ChannelIndex = 0; ChannelIndex < Channels.Length; ChannelIndex++)
+                for (int ChannelIndex = 0; ChannelIndex < Channels.Length; ++ChannelIndex)
                 {
                     string Channel = Channels[ChannelIndex];
 
