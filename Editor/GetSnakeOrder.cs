@@ -4,7 +4,7 @@ namespace Ophura
 {
     internal static partial class Projection
     {
-        private static Vector3 GetSnakeOrder(int Index)
+        internal static Vector3 GetSnakeOrder(int Index)
         {
             // int Column = Index / 4;
             int Column = Index >> 0B10;
@@ -18,7 +18,7 @@ namespace Ophura
                 Row = 3 - Row;
             }
 
-            return new(Column * 230, Row * 100, 0F);
+            return new(Column * 240 - 10, Row * 100 + 100, 0F);
         }
     }
 }
