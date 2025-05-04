@@ -9,8 +9,8 @@ namespace Ophura
 {
     internal static partial class Projection
     {
-        [MenuItem("Tools/Ophura/Create")]
-        private static void Create()
+        [MenuItem("Tools/Ophura/Build Controller")]
+        private static void BuildController()
         {
             AnimatorController Controller = new()
             {
@@ -58,7 +58,7 @@ namespace Ophura
 
             EditorCurveBinding NoneBinding = EditorCurveBinding.FloatCurve(string.Empty, typeof(Object), string.Empty);
 
-            AnimationCurve NoneCurve = AnimationCurve.Linear(0F, 0F, 1F / None.frameRate, 1F);
+            AnimationCurve NoneCurve = AnimationCurve.Linear(0F, 0F, 1F / None.frameRate, 0F);
 
             AnimationUtility.SetEditorCurve(None, NoneBinding, NoneCurve);
 
@@ -82,7 +82,7 @@ namespace Ophura
 
                     EditorCurveBinding Binding = EditorCurveBinding.FloatCurve("Body", typeof(MeshRenderer), $"material.{Channel}_{Identifier}");
 
-                    AnimationCurve Curve = AnimationCurve.Linear(0F, 0F, byte.MaxValue / Animation.frameRate, byte.MaxValue);
+                    AnimationCurve Curve = AnimationCurve.Linear(0F, 0F, 1F / Animation.frameRate, 1F);
 
                     AnimationUtility.SetEditorCurve(Animation, Binding, Curve);
 
