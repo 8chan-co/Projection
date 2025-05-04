@@ -14,69 +14,91 @@ namespace Projection;
 internal static class Noobgram
 {
     private static readonly Socket Client = new(SocketType.Dgram, ProtocolType.Udp);
-    //private static readonly Socket Server = new(SocketType.Dgram, ProtocolType.Udp);
+    private static readonly Socket Server = new(SocketType.Dgram, ProtocolType.Udp);
+    private static readonly List<Vector3> Pixels = [];
+    private static byte PixelIndex;
 
     static Noobgram()
     {
         Client.Connect(new IPEndPoint(IPAddress.Loopback, 9000));
-        //Server.Bind(new IPEndPoint(IPAddress.Loopback, 9001));
+        Server.Bind(new IPEndPoint(IPAddress.Loopback, 9001));
     }
 
-    private static unsafe void Main()
+    private static void Main()
     {
-        ReadOnlySpan<byte> RMessage = "/avatar/parameters/R\0\0\0\0,f\0\0\0\0\0\0"u8;
-        ReadOnlySpan<byte> GMessage = "/avatar/parameters/G\0\0\0\0,f\0\0\0\0\0\0"u8;
-        ReadOnlySpan<byte> BMessage = "/avatar/parameters/B\0\0\0\0,f\0\0\0\0\0\0"u8;
-        ReadOnlySpan<byte> QMessage = "/avatar/parameters/Q\0\0\0\0,T\0\0"u8;
+        StoreTexturePixels("c:/users/ophur/desktop/4x4.png");
 
-        Span<byte> RDatagram = stackalloc byte[RMessage.Length];
-        Span<byte> GDatagram = stackalloc byte[GMessage.Length];
-        Span<byte> BDatagram = stackalloc byte[BMessage.Length];
-        Span<byte> QDatagram = stackalloc byte[QMessage.Length];
+        new Thread(CheckQueueReadiness).UnsafeStart();
 
-        RMessage.CopyTo(RDatagram);
-        GMessage.CopyTo(GDatagram);
-        BMessage.CopyTo(BDatagram);
-        QMessage.CopyTo(QDatagram);
+        while (true);
+    }
 
-        Bitmap Texture = new("c:/users/ophur/desktop/4x4.png");
+    private static void StoreTexturePixels(string Filename)
+    {
+        using Bitmap Texture = new(Filename);
 
         int PixelCount = Texture.Width * Texture.Height;
 
-        List<Vector3> Colors = new(PixelCount);
+        Pixels.Capacity = PixelCount;
 
         for (int Index = 0; Index < PixelCount; ++Index)
         {
-            Color Color = Texture.GetPixel(Index & 3, Index >> 2);
+            Color Pixel = Texture.GetPixel(Index & 3, Index >> 2);
 
-            float R = GammaToLinearSpace(Color.R / (float)byte.MaxValue);
-            float G = GammaToLinearSpace(Color.G / (float)byte.MaxValue);
-            float B = GammaToLinearSpace(Color.B / (float)byte.MaxValue);
+            float R = GammaToLinearSpace(Pixel.R / (float)byte.MaxValue);
+            float G = GammaToLinearSpace(Pixel.G / (float)byte.MaxValue);
+            float B = GammaToLinearSpace(Pixel.B / (float)byte.MaxValue);
 
-            Colors.Add(Vector3.Create(R, G, B));
+            Pixels.Add(Vector3.Create(R, G, B));
         }
 
-        ChannelDatagrams Datagrams = new(RDatagram, GDatagram, BDatagram);
-
-        for (int Pixel = 0; Pixel < Colors.Count; ++Pixel)
+        static float GammaToLinearSpace(float Value) => Value switch
         {
-            SendColor(Datagrams, Colors[Pixel]);
+            <= 0.04045F => Value / 12.92F,
+            < 1.0F => MathF.Pow((Value + 0.055F) / 1.055F, 2.4F),
+            _ => MathF.Pow(Value, 2.2F)
+        };
+    }
 
-            Thread.Sleep(500);
+    private static void CheckQueueReadiness()
+    {
+        ChannelDatagrams Datagrams = new(
+            RDatagram: stackalloc byte[32],
+            GDatagram: stackalloc byte[32],
+            BDatagram: stackalloc byte[32]
+        );
 
-            AdvanceQueue(QMessage);
+        ReadOnlySpan<byte> QueueFalseDatagram = "/avatar/parameters/Q\0\0\0\0,F\0\0"u8;
 
-            Thread.Sleep(100);
+        Span<byte> Datagram = stackalloc byte[sbyte.MaxValue];
+
+        while (true)
+        {
+            if (Server.Receive(Datagram, SocketFlags.None) != QueueFalseDatagram.Length)
+            {
+                continue;
+            }
+            if (Datagram[..QueueFalseDatagram.Length].SequenceEqual(QueueFalseDatagram))
+            {
+                Transfer(Datagrams);
+            }
         }
     }
 
-    private static void SendColor(ChannelDatagrams Channels, Vector3 Color)
+    private static void Transfer(ChannelDatagrams Datagrams)
     {
-        for (int Channel = 0; Channel < Channels.Count; ++Channel)
+        SendPixelColour(Datagrams, Pixels[unchecked(PixelIndex++ & (Pixels.Count - 1))]);
+
+        AdvanceQueue("/avatar/parameters/Q\0\0\0\0,T\0\0"u8);
+    }
+
+    private static void SendPixelColour(ChannelDatagrams Channels, Vector3 Pixel)
+    {
+        for (int Channel = 0; Channel < ChannelDatagrams.Count; ++Channel)
         {
             Span<byte> Datagram = Channels[Channel];
 
-            BinaryPrimitives.WriteSingleBigEndian(Datagram[^4..], Color[Channel]);
+            BinaryPrimitives.WriteSingleBigEndian(Datagram[^4..], Pixel[Channel]);
 
             Client.Send(Datagram, SocketFlags.None);
 
@@ -91,30 +113,22 @@ internal static class Noobgram
         PrintReadableBooleanDatagram(Datagram);
     }
 
-    private static float GammaToLinearSpace(float Value) => Value switch
-    {
-        <= 0.04045F => Value / 12.92F,
-        < 1.0F => MathF.Pow((Value + 0.055F) / 1.055F, 2.4F),
-        _ => MathF.Pow(Value, 2.2F)
-    };
-
     [Conditional("DEBUG")]
     private static void PrintReadableSingleDatagram(ReadOnlySpan<byte> Datagram)
     {
-        string String = Encoding.UTF8.GetString(Datagram[..^4]).Replace('\0', '-');
-
         float Single = BinaryPrimitives.ReadSingleBigEndian(Datagram[^4..]);
 
-        Console.WriteLine($"{String}{Single}");
+        Console.WriteLine($"{GetString(Datagram[..^4])}{Single}");
     }
 
     [Conditional("DEBUG")]
     private static void PrintReadableBooleanDatagram(ReadOnlySpan<byte> Datagram)
     {
-        string String = Encoding.UTF8.GetString(Datagram).Replace('\0', '-');
-
         bool Boolean = Datagram[^3] is (byte)'T';
 
-        Console.WriteLine($"{String}{Boolean}");
+        Console.WriteLine($"{GetString(Datagram)}{Boolean}");
     }
+
+    private static string GetString(ReadOnlySpan<byte> UTF8) =>
+        Encoding.UTF8.GetString(UTF8).Replace('\0', '-');
 }
