@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using VRC.SDK3.Avatars.Components;
+using AvatarParameterDriverType = VRC.SDKBase.VRC_AvatarParameterDriver.ChangeType;
 
 namespace Ophura
 {
@@ -44,67 +46,59 @@ namespace Ophura
                 }
             };
 
-            AssetDatabase.CreateAsset(Controller, $"Assets/{Controller.name}.controller");
+            AssetDatabase.CreateAsset(Controller, $"Assets/Projection/{Controller.name}.controller");
 
-            List<ChildAnimatorStateMachine> StateMachines = new(PixelCount);
-            List<ChildAnimatorState> States = new(Channels.Length);
-
-            for (int PixelIndex = 0; PixelIndex < PixelCount; ++PixelIndex)
+            AnimationClip None = new()
             {
-                string Identifier = $"{PixelIndex:X4}";
+                name = "None",
+                hideFlags = HideFlags.HideInHierarchy
+            };
 
-                for (int ChannelIndex = 0; ChannelIndex < Channels.Length; ++ChannelIndex)
+            AssetDatabase.AddObjectToAsset(None, Controller);
+
+            EditorCurveBinding NoneBinding = EditorCurveBinding.FloatCurve(string.Empty, typeof(Object), string.Empty);
+
+            AnimationCurve NoneCurve = AnimationCurve.Linear(0F, 0F, 1F / None.frameRate, 1F);
+
+            AnimationUtility.SetEditorCurve(None, NoneBinding, NoneCurve);
+
+            List<ChildAnimatorState> States = new(PixelCount * (Channels.Length + 1));
+
+            for (int Y = 0; Y < PixelCount; ++Y)
+            {
+                string Identifier = $"{Y:X4}";
+
+                for (int X = 0; X < Channels.Length; ++X)
                 {
-                    string Channel = Channels[ChannelIndex];
+                    string Channel = Channels[X];
 
-                    AnimationClip MinValue = new()
-                    {
-                        name = "MinValue",
-                        hideFlags = HideFlags.HideInHierarchy
-                    };
+                    string Name = $"{Identifier}:{Channel}";
 
-                    AnimationClip MaxValue = new()
+                    AnimationClip Animation = new()
                     {
-                        name = "MaxValue",
+                        name = Name,
                         hideFlags = HideFlags.HideInHierarchy
                     };
 
                     EditorCurveBinding Binding = EditorCurveBinding.FloatCurve("Body", typeof(MeshRenderer), $"material.{Channel}_{Identifier}");
 
-                    AnimationUtility.SetEditorCurve(MinValue, Binding, AnimationCurve.Linear(0F, 0F, 0.01F, 0F));
-                    AnimationUtility.SetEditorCurve(MaxValue, Binding, AnimationCurve.Linear(0F, 1F, 0.01F, 1F));
+                    AnimationCurve Curve = AnimationCurve.Linear(0F, 0F, byte.MaxValue / Animation.frameRate, byte.MaxValue);
 
-                    AssetDatabase.AddObjectToAsset(MinValue, Controller);
-                    AssetDatabase.AddObjectToAsset(MaxValue, Controller);
+                    AnimationUtility.SetEditorCurve(Animation, Binding, Curve);
 
-                    BlendTree BlendTree = new()
-                    {
-                        name = Channel,
-                        hideFlags = HideFlags.HideInHierarchy,
-                        blendParameter = Channel,
-                        children = new[]
-                        {
-                            new ChildMotion
-                            {
-                                motion = MinValue,
-                                timeScale = 1F
-                            },
-                            new ChildMotion
-                            {
-                                motion = MaxValue,
-                                timeScale = 1F
-                            }
-                        }
-                    };
-
-                    AssetDatabase.AddObjectToAsset(BlendTree, Controller);
+                    AssetDatabase.AddObjectToAsset(Animation, Controller);
 
                     AnimatorState State = new()
                     {
-                        name = Channel,
+                        name = Name,
                         hideFlags = HideFlags.HideInHierarchy,
-                        motion = BlendTree,
-                        writeDefaultValues = false
+                        motion = Animation,
+                        speed = 1F,
+                        writeDefaultValues = false,
+                        speedParameter = TensionParameter,
+                        timeParameter = Channel,
+                        speedParameterActive = true,
+                        timeParameterActive = true
                     };
 
                     AssetDatabase.AddObjectToAsset(State, Controller);
@@ -112,167 +106,109 @@ namespace Ophura
                     States.Add(new()
                     {
                         state = State,
-                        position = new(ChannelIndex * 360 - 10, 100F, 0F)
+                        position = new((X * 240F) - 10F, (Y * 50F) + 100F, 0F)
                     });
                 }
 
-                AnimatorStateMachine StateMachine = new()
+                AnimatorState Stop = new()
                 {
-                    name = Identifier,
+                    name = $"{Identifier}:S",
                     hideFlags = HideFlags.HideInHierarchy,
-                    states = States.ToArray(),
-                    anyStatePosition = AnyStateNodePosition,
-                    entryPosition = EntryNodePosition,
-                    exitPosition = ExitNodePosition,
-                    parentStateMachinePosition = ParentStateMachinePosition
+                    motion = None,
+                    writeDefaultValues = false
                 };
 
-                States.Clear();
+                AssetDatabase.AddObjectToAsset(Stop, Controller);
 
-                StateMachines.Add(new()
+                States.Add(new()
                 {
-                    stateMachine = StateMachine,
-                    position = GetSnakeOrder(PixelIndex)
+                    state = Stop,
+                    position = new(710F, (Y * 50F) + 100F, 0F)
                 });
 
-                AssetDatabase.AddObjectToAsset(StateMachine, Controller);
+                VRCAvatarParameterDriver Driver = Stop.AddStateMachineBehaviour<VRCAvatarParameterDriver>();
+                Driver.name = Stop.name;
+
+                Driver.parameters.Add(new()
+                {
+                    type = AvatarParameterDriverType.Set,
+                    name = QueueParameter
+                });
             }
 
-            AnimatorStateMachine Workspace = new()
+            for (int Index = 0; Index < States.Count - 1; ++Index)
             {
-                name = "Workspace",
-                hideFlags = HideFlags.HideInHierarchy,
-                stateMachines = StateMachines.ToArray(),
-                anyStatePosition = AnyStateNodePosition,
-                entryPosition = EntryNodePosition,
-                exitPosition = ExitNodePosition
-            };
+                AnimatorState CurrentState = States[Index].state;
+                AnimatorState NextState = States[Index + 1].state;
 
-            for (int StateMachineIndex = 0; StateMachineIndex < StateMachines.Count - 1; ++StateMachineIndex)
-            {
-                AnimatorStateMachine CurrentStateMachine = StateMachines[StateMachineIndex].stateMachine;
-                AnimatorStateMachine NextStateMachine = StateMachines[StateMachineIndex + 1].stateMachine;
+                bool ShouldExit = (Index & 3) is not 3;
 
-                for (int StateIndex = 0; StateIndex < CurrentStateMachine.states.Length - 1; ++StateIndex)
+                AnimatorStateTransition Transition = new()
                 {
-                    AnimatorState CurrentState = CurrentStateMachine.states[StateIndex].state;
-                    AnimatorState NextState = CurrentStateMachine.states[StateIndex + 1].state;
-
-                    AnimatorStateTransition StateTransition = new()
-                    {
-                        name = BuildTransitionName(CurrentState.name, NextState.name),
-                        hideFlags = HideFlags.HideInHierarchy,
-                        destinationState = NextState,
-                        duration = 0F,
-                        interruptionSource = TransitionInterruptionSource.None,
-                        orderedInterruption = false,
-                        exitTime = 1F,
-                        hasExitTime = true,
-                        hasFixedDuration = true,
-                        canTransitionToSelf = false
-                    };
-
-                    AssetDatabase.AddObjectToAsset(StateTransition, Controller);
-
-                    CurrentState.transitions = new[] { StateTransition };
-                }
-
-                AnimatorState LastState = CurrentStateMachine.states[^1].state;
-
-                AnimatorStateTransition StateExitTransition = new()
-                {
-                    name = BuildTransitionName(LastState.name, "Exit"),
+                    name = BuildTransitionName(CurrentState.name, NextState.name),
                     hideFlags = HideFlags.HideInHierarchy,
-                    isExit = true,
-                    duration = 0F,
-                    interruptionSource = TransitionInterruptionSource.None,
-                    orderedInterruption = false,
-                    exitTime = 1F,
-                    hasExitTime = true,
-                    hasFixedDuration = true,
-                    canTransitionToSelf = false
-                };
-
-                AssetDatabase.AddObjectToAsset(StateExitTransition, Controller);
-
-                LastState.transitions = new[] { StateExitTransition };
-
-                AnimatorTransition StateMachineTransition = new()
-                {
-                    name = BuildTransitionName(CurrentStateMachine.name, NextStateMachine.name),
-                    hideFlags = HideFlags.HideInHierarchy,
-                    destinationStateMachine = NextStateMachine,
-                    conditions = new[]
+                    destinationState = NextState,
+                    conditions = ShouldExit ? null : new[]
                     {
                         new AnimatorCondition
                         {
                             mode = AnimatorConditionMode.If,
                             parameter = QueueParameter
                         }
-                    }
-                };
-
-                AssetDatabase.AddObjectToAsset(StateMachineTransition, Controller);
-
-                Workspace.SetStateMachineTransitions(CurrentStateMachine, new[] { StateMachineTransition });
-            }
-
-            AnimatorStateMachine LastStateMachine = StateMachines[^1].stateMachine;
-
-            for (int StateIndex = 0; StateIndex < LastStateMachine.states.Length - 1; ++StateIndex)
-            {
-                AnimatorState CurrentState = LastStateMachine.states[StateIndex].state;
-                AnimatorState NextState = LastStateMachine.states[StateIndex + 1].state;
-
-                AnimatorStateTransition StateTransition = new()
-                {
-                    name = BuildTransitionName(CurrentState.name, NextState.name),
-                    hideFlags = HideFlags.HideInHierarchy,
-                    destinationState = NextState,
+                    },
                     duration = 0F,
                     interruptionSource = TransitionInterruptionSource.None,
                     orderedInterruption = false,
-                    exitTime = 1F,
-                    hasExitTime = true,
+                    exitTime = ShouldExit ? 1F : 0F,
+                    hasExitTime = ShouldExit,
                     hasFixedDuration = true,
                     canTransitionToSelf = false
                 };
 
-                AssetDatabase.AddObjectToAsset(StateTransition, Controller);
+                AssetDatabase.AddObjectToAsset(Transition, Controller);
 
-                CurrentState.transitions = new[] { StateTransition };
+                CurrentState.transitions = new[] { Transition };
             }
 
-            AnimatorState LastStateMachineLastState = LastStateMachine.states[^1].state;
+            AnimatorState First = States[0].state;
+            AnimatorState Last = States[^1].state;
 
-            AnimatorStateTransition LastStateExitTransition = new()
+            AnimatorStateTransition Roundtrip = new()
             {
-                name = BuildTransitionName(LastStateMachineLastState.name, "Exit"),
+                name = BuildTransitionName(Last.name, First.name),
                 hideFlags = HideFlags.HideInHierarchy,
-                isExit = true,
+                destinationState = First,
+                conditions = new[]
+                {
+                    new AnimatorCondition
+                    {
+                        mode = AnimatorConditionMode.If,
+                        parameter = QueueParameter
+                    }
+                },
                 duration = 0F,
                 interruptionSource = TransitionInterruptionSource.None,
                 orderedInterruption = false,
-                exitTime = 1F,
-                hasExitTime = true,
+                exitTime = 0F,
+                hasExitTime = false,
                 hasFixedDuration = true,
                 canTransitionToSelf = false
             };
 
-            AssetDatabase.AddObjectToAsset(LastStateExitTransition, Controller);
+            Last.transitions = new[] { Roundtrip };
 
-            LastStateMachineLastState.transitions = new[] { LastStateExitTransition };
-
-            AnimatorTransition StateMachineExitTransition = new()
+            AnimatorStateMachine Workspace = new()
             {
-                name = BuildTransitionName(LastStateMachine.name, "Exit"),
+                name = "Workspace",
                 hideFlags = HideFlags.HideInHierarchy,
-                isExit = true
+                states = States.ToArray(),
+                defaultState = Last,
+                anyStatePosition = AnyStateNodePosition,
+                entryPosition = EntryNodePosition,
+                exitPosition = ExitNodePosition
             };
 
-            AssetDatabase.AddObjectToAsset(StateMachineExitTransition, Controller);
-
-            Workspace.SetStateMachineTransitions(LastStateMachine, new[] { StateMachineExitTransition });
+            AssetDatabase.AddObjectToAsset(Workspace, Controller);
 
             Controller.layers = new[]
             {
@@ -283,11 +219,7 @@ namespace Ophura
                 }
             };
 
-            AssetDatabase.AddObjectToAsset(Workspace, Controller);
-
             AssetDatabase.SaveAssetIfDirty(Controller);
-
-            SetActiveAndPing(Controller.GetInstanceID());
         }
     }
 }
