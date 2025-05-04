@@ -13,10 +13,12 @@ namespace Projection;
 
 internal static class Noobgram
 {
+    private static readonly List<Vector3> Pixels = [];
+
     private static readonly Socket Client = new(SocketType.Dgram, ProtocolType.Udp);
     private static readonly Socket Server = new(SocketType.Dgram, ProtocolType.Udp);
-    private static readonly List<Vector3> Pixels = [];
-    private static byte PixelIndex;
+
+    private static int PixelIndex;
 
     static Noobgram()
     {
@@ -28,9 +30,15 @@ internal static class Noobgram
     {
         StoreTexturePixels("c:/users/ophur/desktop/4x4.png");
 
-        new Thread(CheckQueueReadiness).UnsafeStart();
+        new Thread(TransferOnDemand).UnsafeStart();
 
-        while (true);
+        ChannelDatagrams Datagrams = new(stackalloc byte[32], stackalloc byte[32], stackalloc byte[32]);
+
+        SendPixelColour(Datagrams, Pixels[PixelIndex++ & (Pixels.Count - 1)]);
+
+        AdvanceQueue("/avatar/parameters/Q\0\0\0\0,T\0\0"u8);
+
+        while (true) ;
     }
 
     private static void StoreTexturePixels(string Filename)
@@ -60,17 +68,13 @@ internal static class Noobgram
         };
     }
 
-    private static void CheckQueueReadiness()
+    private static void TransferOnDemand()
     {
-        ChannelDatagrams Datagrams = new(
-            RDatagram: stackalloc byte[32],
-            GDatagram: stackalloc byte[32],
-            BDatagram: stackalloc byte[32]
-        );
+        Span<byte> Datagram = stackalloc byte[sbyte.MaxValue];
 
         ReadOnlySpan<byte> QueueFalseDatagram = "/avatar/parameters/Q\0\0\0\0,F\0\0"u8;
 
-        Span<byte> Datagram = stackalloc byte[sbyte.MaxValue];
+        ChannelDatagrams Datagrams = new(stackalloc byte[32], stackalloc byte[32], stackalloc byte[32]);
 
         while (true)
         {
@@ -78,18 +82,17 @@ internal static class Noobgram
             {
                 continue;
             }
-            if (Datagram[..QueueFalseDatagram.Length].SequenceEqual(QueueFalseDatagram))
+            if (Datagram[..QueueFalseDatagram.Length].SequenceEqual(QueueFalseDatagram) is false)
             {
-                Transfer(Datagrams);
+                continue;
             }
+
+            SendPixelColour(Datagrams, Pixels[PixelIndex & (Pixels.Count - 1)]);
+
+            Interlocked.Increment(ref PixelIndex);
+
+            AdvanceQueue("/avatar/parameters/Q\0\0\0\0,T\0\0"u8);
         }
-    }
-
-    private static void Transfer(ChannelDatagrams Datagrams)
-    {
-        SendPixelColour(Datagrams, Pixels[unchecked(PixelIndex++ & (Pixels.Count - 1))]);
-
-        AdvanceQueue("/avatar/parameters/Q\0\0\0\0,T\0\0"u8);
     }
 
     private static void SendPixelColour(ChannelDatagrams Channels, Vector3 Pixel)
