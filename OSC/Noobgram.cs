@@ -9,17 +9,17 @@ using System.Numerics;
 using System.Text;
 using System.Threading;
 
-namespace Ophura;
+namespace Projection;
 
 internal static class Noobgram
 {
-    private static readonly Socket Sender = new(SocketType.Dgram, ProtocolType.Udp);
-    //private static readonly Socket Receiver = new(SocketType.Dgram, ProtocolType.Udp);
+    private static readonly Socket Client = new(SocketType.Dgram, ProtocolType.Udp);
+    //private static readonly Socket Server = new(SocketType.Dgram, ProtocolType.Udp);
 
     static Noobgram()
     {
-        Sender.Connect(new IPEndPoint(IPAddress.Loopback, 9000));
-        //Receiver.Bind(new IPEndPoint(IPAddress.Loopback, 9001));
+        Client.Connect(new IPEndPoint(IPAddress.Loopback, 9000));
+        //Server.Bind(new IPEndPoint(IPAddress.Loopback, 9001));
     }
 
     private static unsafe void Main()
@@ -27,7 +27,7 @@ internal static class Noobgram
         ReadOnlySpan<byte> RMessage = "/avatar/parameters/R\0\0\0\0,f\0\0\0\0\0\0"u8;
         ReadOnlySpan<byte> GMessage = "/avatar/parameters/G\0\0\0\0,f\0\0\0\0\0\0"u8;
         ReadOnlySpan<byte> BMessage = "/avatar/parameters/B\0\0\0\0,f\0\0\0\0\0\0"u8;
-        ReadOnlySpan<byte> QMessage = "/avatar/parameters/Q\0\0\0\0,i\0\0\0\0\0\0"u8;
+        ReadOnlySpan<byte> QMessage = "/avatar/parameters/Q\0\0\0\0,T\0\0"u8;
 
         Span<byte> RDatagram = stackalloc byte[RMessage.Length];
         Span<byte> GDatagram = stackalloc byte[GMessage.Length];
@@ -62,32 +62,33 @@ internal static class Noobgram
         {
             SendColor(Datagrams, Colors[Pixel]);
 
-            Thread.Sleep(200);
+            Thread.Sleep(500);
 
-            BinaryPrimitives.WriteInt32BigEndian(QDatagram[^4..], Pixel + 1 & PixelCount - 1);
+            AdvanceQueue(QMessage);
 
-            PrintReadableDatagramWithInt32(QDatagram);
-
-            Sender.Send(QDatagram, SocketFlags.None);
-
-            Thread.Sleep(200);
+            Thread.Sleep(100);
         }
-
-        SendColor(Datagrams, Colors[0]);
     }
 
-    private static void SendColor(ChannelDatagrams Datagrams, Vector3 Color)
+    private static void SendColor(ChannelDatagrams Channels, Vector3 Color)
     {
-        for (int Channel = 0; Channel < Datagrams.Count; ++Channel)
+        for (int Channel = 0; Channel < Channels.Count; ++Channel)
         {
-            Span<byte> Datagram = Datagrams[Channel];
+            Span<byte> Datagram = Channels[Channel];
 
             BinaryPrimitives.WriteSingleBigEndian(Datagram[^4..], Color[Channel]);
 
-            Sender.Send(Datagram, SocketFlags.None);
+            Client.Send(Datagram, SocketFlags.None);
 
-            PrintReadableDatagramWithSingle(Datagram);
+            PrintReadableSingleDatagram(Datagram);
         }
+    }
+
+    private static void AdvanceQueue(ReadOnlySpan<byte> Datagram)
+    {
+        Client.Send(Datagram, SocketFlags.None);
+
+        PrintReadableBooleanDatagram(Datagram);
     }
 
     private static float GammaToLinearSpace(float Value) => Value switch
@@ -98,22 +99,22 @@ internal static class Noobgram
     };
 
     [Conditional("DEBUG")]
-    private static void PrintReadableDatagramWithSingle(ReadOnlySpan<byte> Datagram)
+    private static void PrintReadableSingleDatagram(ReadOnlySpan<byte> Datagram)
     {
         string String = Encoding.UTF8.GetString(Datagram[..^4]).Replace('\0', '-');
 
-        float Float = BinaryPrimitives.ReadSingleBigEndian(Datagram[^4..]);
+        float Single = BinaryPrimitives.ReadSingleBigEndian(Datagram[^4..]);
 
-        Console.WriteLine($"{String}{Float}");
+        Console.WriteLine($"{String}{Single}");
     }
 
     [Conditional("DEBUG")]
-    private static void PrintReadableDatagramWithInt32(ReadOnlySpan<byte> Datagram)
+    private static void PrintReadableBooleanDatagram(ReadOnlySpan<byte> Datagram)
     {
-        string String = Encoding.UTF8.GetString(Datagram[..^4]).Replace('\0', '-');
+        string String = Encoding.UTF8.GetString(Datagram).Replace('\0', '-');
 
-        int Int32 = BinaryPrimitives.ReadInt32BigEndian(Datagram[^4..]);
+        bool Boolean = Datagram[^3] is (byte)'T';
 
-        Console.WriteLine($"{String}{Int32}");
+        Console.WriteLine($"{String}{Boolean}");
     }
 }
