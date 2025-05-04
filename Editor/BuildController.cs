@@ -6,7 +6,7 @@ namespace Ophura
 {
     internal static partial class Projection
     {
-        [MenuItem("Tools/Ophura/Build Controller")]
+        //[MenuItem("Tools/Ophura/Build Controller")]
         private static void BuildController()
         {
             AnimatorController Controller = CreateController();
