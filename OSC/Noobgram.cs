@@ -38,7 +38,7 @@ internal static class Noobgram
 
         AdvanceQueue("/avatar/parameters/Q\0\0\0\0,T\0\0"u8);
 
-        while (true) ;
+        while (true);
     }
 
     private static void StoreTexturePixels(string Filename)
