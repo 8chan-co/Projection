@@ -1,12 +1,10 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
-using System.Text;
 using System.Threading;
 
 namespace Projection;
@@ -39,7 +37,7 @@ internal static class Noobgram
 
             SendPixelColour(Datagrams, Pixels[PixelIndex++ & (Pixels.Count - 1)]);
 
-            AdvanceQueue("/avatar/parameters/Q\0\0\0\0,T\0\0"u8);
+            AdvanceQueue();
 
             Thread.Sleep(Timeout.Infinite);
         }
@@ -80,6 +78,8 @@ internal static class Noobgram
 
         ChannelDatagrams Datagrams = new(stackalloc byte[32], stackalloc byte[32], stackalloc byte[32]);
 
+        int PixelCountMinusOne = Pixels.Count - 1;
+
         while (true)
         {
             if (Server.Receive(Datagram, SocketFlags.None) != QueueFalseDatagram.Length)
@@ -91,11 +91,11 @@ internal static class Noobgram
                 continue;
             }
 
-            SendPixelColour(Datagrams, Pixels[PixelIndex & (Pixels.Count - 1)]);
+            SendPixelColour(Datagrams, Pixels[PixelIndex & PixelCountMinusOne]);
 
             Interlocked.Increment(ref PixelIndex);
 
-            AdvanceQueue("/avatar/parameters/Q\0\0\0\0,T\0\0"u8);
+            AdvanceQueue();
         }
     }
 
@@ -108,34 +108,8 @@ internal static class Noobgram
             BinaryPrimitives.WriteSingleBigEndian(Datagram[^4..], Pixel[Channel]);
 
             Client.Send(Datagram, SocketFlags.None);
-
-            PrintReadableSingleDatagram(Datagram);
         }
     }
 
-    private static void AdvanceQueue(ReadOnlySpan<byte> Datagram)
-    {
-        Client.Send(Datagram, SocketFlags.None);
-
-        PrintReadableBooleanDatagram(Datagram);
-    }
-
-    [Conditional("DEBUG")]
-    private static void PrintReadableSingleDatagram(ReadOnlySpan<byte> Datagram)
-    {
-        float Single = BinaryPrimitives.ReadSingleBigEndian(Datagram[^4..]);
-
-        Console.WriteLine($"{GetString(Datagram[..^4])}{Single}");
-    }
-
-    [Conditional("DEBUG")]
-    private static void PrintReadableBooleanDatagram(ReadOnlySpan<byte> Datagram)
-    {
-        bool Boolean = Datagram[^3] is (byte)'T';
-
-        Console.WriteLine($"{GetString(Datagram)}{Boolean}");
-    }
-
-    private static string GetString(ReadOnlySpan<byte> UTF8) =>
-        Encoding.UTF8.GetString(UTF8).Replace('\0', '-');
+    private static void AdvanceQueue() => Client.Send("/avatar/parameters/Q\0\0\0\0,T\0\0"u8, SocketFlags.None);
 }
