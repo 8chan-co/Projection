@@ -11,9 +11,8 @@ namespace Ophura
 
         private static string[] Channels { get; } = { "R", "G", "B" };
 
-        private static Vector3 ParentStateMachinePosition { get; } = new(350F, 50F, 0F);
-        private static Vector3 EntryNodePosition { get; } = new(10F, 0F, 0F);
-        private static Vector3 AnyStateNodePosition { get; } = new(370F, 0F, 0F);
+        private static Vector3 AnyStateNodePosition { get; } = new(10F, 0F, 0F);
+        private static Vector3 EntryNodePosition { get; } = new(370F, 0F, 0F);
         private static Vector3 ExitNodePosition { get; } = new(730F, 0F, 0F);
     }
 }
