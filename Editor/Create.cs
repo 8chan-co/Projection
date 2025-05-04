@@ -20,17 +20,20 @@ namespace Ophura
                     new()
                     {
                         name = "R",
-                        type = AnimatorControllerParameterType.Float
+                        type = AnimatorControllerParameterType.Float,
+                        defaultFloat = 0.08353512F
                     },
                     new()
                     {
                         name = "G",
-                        type = AnimatorControllerParameterType.Float
+                        type = AnimatorControllerParameterType.Float,
+                        defaultFloat = 0.08353512F
                     },
                     new()
                     {
                         name = "B",
-                        type = AnimatorControllerParameterType.Float
+                        type = AnimatorControllerParameterType.Float,
+                        defaultFloat = 0.08353512F
                     },
                     new()
                     {
