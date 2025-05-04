@@ -39,7 +39,7 @@ namespace Ophura
                     new()
                     {
                         name = QueueParameter,
-                        type = AnimatorControllerParameterType.Int
+                        type = AnimatorControllerParameterType.Bool
                     }
                 }
             };
@@ -206,9 +206,8 @@ namespace Ophura
                     {
                         new AnimatorCondition
                         {
-                            mode = AnimatorConditionMode.Equals,
-                            parameter = QueueParameter,
-                            threshold = StateMachineIndex
+                            mode = AnimatorConditionMode.If,
+                            parameter = QueueParameter
                         }
                     }
                 };
