@@ -28,17 +28,21 @@ internal static class Noobgram
 
     private static void Main()
     {
-        StoreTexturePixels("c:/users/ophur/desktop/4x4.png");
+        using (Client)
+        using (Server)
+        {
+            StoreTexturePixels("c:/users/ophur/desktop/4x4.png");
 
-        new Thread(TransferOnDemand).UnsafeStart();
+            new Thread(TransferOnDemand).UnsafeStart();
 
-        ChannelDatagrams Datagrams = new(stackalloc byte[32], stackalloc byte[32], stackalloc byte[32]);
+            ChannelDatagrams Datagrams = new(stackalloc byte[32], stackalloc byte[32], stackalloc byte[32]);
 
-        SendPixelColour(Datagrams, Pixels[PixelIndex++ & (Pixels.Count - 1)]);
+            SendPixelColour(Datagrams, Pixels[PixelIndex++ & (Pixels.Count - 1)]);
 
-        AdvanceQueue("/avatar/parameters/Q\0\0\0\0,T\0\0"u8);
+            AdvanceQueue("/avatar/parameters/Q\0\0\0\0,T\0\0"u8);
 
-        while (true);
+            Thread.Sleep(Timeout.Infinite);
+        }
     }
 
     private static void StoreTexturePixels(string Filename)
