@@ -37,7 +37,6 @@ Shader "Ophura/Projection" {
           ObjectSpace = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, ObjectSpace));
 
           UV.y = invert(UV.y);
-
           UV *= 64;
 
           return UV;
