@@ -31,7 +31,7 @@ Shader "Ophura/Projection" {
         "LightMode"="Always"
       }
       HLSLPROGRAM
-        extern uniform vector<float, 4> Pixels_0000[32 * 32];
+        extern uniform vector<unorm float, 4> Pixels_0000[32 * 32];
 
         vector<float, 4> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
@@ -42,7 +42,7 @@ Shader "Ophura/Projection" {
           return UV;
         }
 
-        vector<float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
+        vector<unorm float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
           vector<uint, 2> Quadrant = vector<uint, 2>(UV.xy); // (uint2)trunc(UV.xy)
 
           if (Quadrant.x >= 32U || Quadrant.y >= 32U) {
@@ -60,7 +60,7 @@ Shader "Ophura/Projection" {
         "LightMode"="Always"
       }
       HLSLPROGRAM
-        extern uniform vector<float, 4> Pixels_0001[32 * 32];
+        extern uniform vector<unorm float, 4> Pixels_0001[32 * 32];
 
         vector<float, 4> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
@@ -71,7 +71,7 @@ Shader "Ophura/Projection" {
           return UV;
         }
 
-        vector<float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
+        vector<unorm float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
           vector<uint, 2> Quadrant = vector<uint, 2>(UV.xy); // (uint2)trunc(UV.xy)
 
           if (Quadrant.x < 32U || Quadrant.y >= 32U) {
@@ -89,7 +89,7 @@ Shader "Ophura/Projection" {
         "LightMode"="Always"
       }
       HLSLPROGRAM
-        extern uniform vector<float, 4> Pixels_0002[32 * 32];
+        extern uniform vector<unorm float, 4> Pixels_0002[32 * 32];
 
         vector<float, 4> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
@@ -100,7 +100,7 @@ Shader "Ophura/Projection" {
           return UV;
         }
 
-        vector<float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
+        vector<unorm float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
           vector<uint, 2> Quadrant = vector<uint, 2>(UV.xy); // (uint2)trunc(UV.xy)
 
           if (Quadrant.x >= 32U || Quadrant.y < 32U) {
@@ -118,7 +118,7 @@ Shader "Ophura/Projection" {
         "LightMode"="Always"
       }
       HLSLPROGRAM
-        extern uniform vector<float, 4> Pixels_0003[32 * 32];
+        extern uniform vector<unorm float, 4> Pixels_0003[32 * 32];
 
         vector<float, 4> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
@@ -129,7 +129,7 @@ Shader "Ophura/Projection" {
           return UV;
         }
 
-        vector<float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
+        vector<unorm float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
           vector<uint, 2> Quadrant = vector<uint, 2>(UV.xy); // (uint2)trunc(UV.xy)
 
           if (Quadrant.x < 32U || Quadrant.y < 32U) {
