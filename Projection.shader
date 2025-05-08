@@ -33,7 +33,7 @@ Shader "Ophura/Projection" {
       HLSLPROGRAM
         extern uniform vector<float, 4> Pixels_0000[32 * 32];
 
-        vector<float, 2> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
+        vector<float, 4> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
@@ -62,7 +62,7 @@ Shader "Ophura/Projection" {
       HLSLPROGRAM
         extern uniform vector<float, 4> Pixels_0001[32 * 32];
 
-        vector<float, 2> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
+        vector<float, 4> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
@@ -91,7 +91,7 @@ Shader "Ophura/Projection" {
       HLSLPROGRAM
         extern uniform vector<float, 4> Pixels_0002[32 * 32];
 
-        vector<float, 2> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
+        vector<float, 4> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
@@ -120,7 +120,7 @@ Shader "Ophura/Projection" {
       HLSLPROGRAM
         extern uniform vector<float, 4> Pixels_0003[32 * 32];
 
-        vector<float, 2> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
+        vector<float, 4> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
