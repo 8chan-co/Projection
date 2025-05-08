@@ -37,7 +37,7 @@ Shader "Ophura/Projection" {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
-          UV *= 64;
+          UV.xy *= 64.0F;
 
           return UV;
         }
@@ -66,7 +66,7 @@ Shader "Ophura/Projection" {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
-          UV *= 64.0F;
+          UV.xy *= 64.0F;
 
           return UV;
         }
@@ -95,7 +95,7 @@ Shader "Ophura/Projection" {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
-          UV *= 64.0F;
+          UV.xy *= 64.0F;
 
           return UV;
         }
@@ -124,7 +124,7 @@ Shader "Ophura/Projection" {
           Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
-          UV *= 64.0F;
+          UV.xy *= 64.0F;
 
           return UV;
         }
