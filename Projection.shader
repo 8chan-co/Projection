@@ -33,8 +33,8 @@ Shader "Ophura/Projection" {
       HLSLPROGRAM
         extern uniform vector<float, 4> Pixels_0000[32 * 32];
 
-        vector<float, 2> VertexProgram(inout vector<float, 4> ObjectSpace: POSITION, in vector<float, 2> UV: TEXCOORD): TEXCOORD {
-          ObjectSpace = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, ObjectSpace));
+        vector<float, 2> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
+          Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
           UV *= 64;
@@ -42,8 +42,8 @@ Shader "Ophura/Projection" {
           return UV;
         }
 
-        vector<float, 4> PixelProgram(in vector<float, 2> UV: TEXCOORD): SV_TARGET {
-          vector<uint, 2> Quadrant = vector<uint, 2>(UV); // (uint2)trunc(UV)
+        vector<float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
+          vector<uint, 2> Quadrant = vector<uint, 2>(UV.xy); // (uint2)trunc(UV.xy)
 
           if (Quadrant.x >= 32U || Quadrant.y >= 32U) {
             discard; // NOTE: execution continues after this, should consider returning as well?
@@ -62,8 +62,8 @@ Shader "Ophura/Projection" {
       HLSLPROGRAM
         extern uniform vector<float, 4> Pixels_0001[32 * 32];
 
-        vector<float, 2> VertexProgram(inout vector<float, 4> ObjectSpace: POSITION, in vector<float, 2> UV: TEXCOORD): TEXCOORD {
-          ObjectSpace = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, ObjectSpace));
+        vector<float, 2> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
+          Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
           UV *= 64.0F;
@@ -71,8 +71,8 @@ Shader "Ophura/Projection" {
           return UV;
         }
 
-        vector<float, 4> PixelProgram(in vector<float, 2> UV: TEXCOORD): SV_TARGET {
-          vector<uint, 2> Quadrant = vector<uint, 2>(UV); // (uint2)trunc(UV)
+        vector<float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
+          vector<uint, 2> Quadrant = vector<uint, 2>(UV.xy); // (uint2)trunc(UV.xy)
 
           if (Quadrant.x < 32U || Quadrant.y >= 32U) {
             discard; // NOTE: execution continues after this, should consider returning as well?
@@ -91,8 +91,8 @@ Shader "Ophura/Projection" {
       HLSLPROGRAM
         extern uniform vector<float, 4> Pixels_0002[32 * 32];
 
-        vector<float, 2> VertexProgram(inout vector<float, 4> ObjectSpace: POSITION, in vector<float, 2> UV: TEXCOORD): TEXCOORD {
-          ObjectSpace = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, ObjectSpace));
+        vector<float, 2> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
+          Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
           UV *= 64.0F;
@@ -100,8 +100,8 @@ Shader "Ophura/Projection" {
           return UV;
         }
 
-        vector<float, 4> PixelProgram(in vector<float, 2> UV: TEXCOORD): SV_TARGET {
-          vector<uint, 2> Quadrant = vector<uint, 2>(UV); // (uint2)trunc(UV)
+        vector<float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
+          vector<uint, 2> Quadrant = vector<uint, 2>(UV.xy); // (uint2)trunc(UV.xy)
 
           if (Quadrant.x >= 32U || Quadrant.y < 32U) {
             discard; // NOTE: execution continues after this, should consider returning as well?
@@ -120,8 +120,8 @@ Shader "Ophura/Projection" {
       HLSLPROGRAM
         extern uniform vector<float, 4> Pixels_0003[32 * 32];
 
-        vector<float, 2> VertexProgram(inout vector<float, 4> ObjectSpace: POSITION, in vector<float, 2> UV: TEXCOORD): TEXCOORD {
-          ObjectSpace = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, ObjectSpace));
+        vector<float, 2> VertexProgram(inout vector<float, 4> Position: position, in vector<float, 4> UV: texcoord): texcoord {
+          Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
 
           UV.y = invert(UV.y);
           UV *= 64.0F;
@@ -129,8 +129,8 @@ Shader "Ophura/Projection" {
           return UV;
         }
 
-        vector<float, 4> PixelProgram(in vector<float, 2> UV: TEXCOORD): SV_TARGET {
-          vector<uint, 2> Quadrant = vector<uint, 2>(UV); // (uint2)trunc(UV)
+        vector<float, 4> PixelProgram(in vector<float, 4> UV: texcoord): sv_target {
+          vector<uint, 2> Quadrant = vector<uint, 2>(UV.xy); // (uint2)trunc(UV.xy)
 
           if (Quadrant.x < 32U || Quadrant.y < 32U) {
             discard; // NOTE: execution continues after this, should consider returning as well?
