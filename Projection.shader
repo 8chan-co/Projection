@@ -148,7 +148,7 @@ Shader "Ophura/Projection" {
 
         vector<unorm float, 4> PixelProgram(in vector<float, 4> Coordinates: texcoord): sv_target {
           vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates.xy);
-          
+
           if (Quadrant.x < 32U || Quadrant.y < 32U) {
             discard; // NOTE: execution continues after this, should consider returning as well?
           }
