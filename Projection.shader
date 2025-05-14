@@ -5,7 +5,7 @@ Shader "Ophura/Projection" {
     Pixels_0002 ("Pixels 0002", Color) = (1.0, 1.0, 1.0, 1.0)
     Pixels_0003 ("Pixels 0003", Color) = (1.0, 1.0, 1.0, 1.0)
   }
-  //CustomEditor "Totally"
+  CustomEditor "Ophura.Totally"
   SubShader {
     Tags {
       "Queue" = "Geometry"
@@ -49,16 +49,16 @@ Shader "Ophura/Projection" {
         class HomogenousSpace VSMain(vector<float, 4> Position :position, vector<float, 2> Coordinates :texcoord) {
           class HomogenousSpace Result;
 
-          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
-
           Coordinates.y = invert(Coordinates.y);
-          Result.Coordinates = Coordinates.xy * 128.0F;
+          Result.Coordinates = Coordinates * 128.0F;
+
+          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
 
           return Result;
         }
 
-        vector<unorm float, 4> PSMain(vector<float, 4> Coordinates :texcoord): sv_target {
-          vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates.xy);
+        vector<unorm float, 4> PSMain(vector<float, 2> Coordinates :texcoord) :sv_target {
+          vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates);
 
           if (Quadrant.x >= 64U || Quadrant.y >= 64U) {
             discard; return vector<unorm float, 4>(1.0F, 1.0F, 1.0F, 1.0F);
@@ -80,16 +80,16 @@ Shader "Ophura/Projection" {
         class HomogenousSpace VSMain(vector<float, 4> Position :position, vector<float, 2> Coordinates :texcoord) {
           class HomogenousSpace Result;
 
-          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
-
           Coordinates.y = invert(Coordinates.y);
-          Result.Coordinates = Coordinates.xy * 128.0F;
+          Result.Coordinates = Coordinates * 128.0F;
+
+          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
 
           return Result;
         }
 
-        vector<unorm float, 4> PSMain(vector<float, 4> Coordinates :texcoord): sv_target {
-          vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates.xy);
+        vector<unorm float, 4> PSMain(vector<float, 2> Coordinates :texcoord) :sv_target {
+          vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates);
 
           if (Quadrant.x < 64U || Quadrant.y >= 64U) {
             discard; return vector<unorm float, 4>(1.0F, 1.0F, 1.0F, 1.0F);
@@ -111,16 +111,16 @@ Shader "Ophura/Projection" {
         class HomogenousSpace VSMain(vector<float, 4> Position :position, vector<float, 2> Coordinates :texcoord) {
           class HomogenousSpace Result;
 
-          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
-
           Coordinates.y = invert(Coordinates.y);
-          Result.Coordinates = Coordinates.xy * 128.0F;
+          Result.Coordinates = Coordinates * 128.0F;
+
+          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
 
           return Result;
         }
 
-        vector<unorm float, 4> PSMain(vector<float, 4> Coordinates :texcoord): sv_target {
-          vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates.xy);
+        vector<unorm float, 4> PSMain(vector<float, 2> Coordinates :texcoord) :sv_target {
+          vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates);
 
           if (Quadrant.x >= 64U || Quadrant.y < 64U) {
             discard; return vector<unorm float, 4>(1.0F, 1.0F, 1.0F, 1.0F);
@@ -142,16 +142,16 @@ Shader "Ophura/Projection" {
         class HomogenousSpace VSMain(vector<float, 4> Position :position, vector<float, 2> Coordinates :texcoord) {
           class HomogenousSpace Result;
 
-          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
-
           Coordinates.y = invert(Coordinates.y);
-          Result.Coordinates = Coordinates.xy * 128.0F;
+          Result.Coordinates = Coordinates * 128.0F;
+
+          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
 
           return Result;
         }
 
-        vector<unorm float, 4> PSMain(vector<float, 4> Coordinates :texcoord): sv_target {
-          vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates.xy);
+        vector<unorm float, 4> PSMain(vector<float, 2> Coordinates :texcoord) :sv_target {
+          vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates);
 
           if (Quadrant.x < 64U || Quadrant.y < 64U) {
             discard; return vector<unorm float, 4>(1.0F, 1.0F, 1.0F, 1.0F);
