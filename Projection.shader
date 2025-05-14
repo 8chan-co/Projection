@@ -75,7 +75,7 @@ Shader "Ophura/Projection" {
         "LightMode" = "Always"
       }
       HLSLPROGRAM
-        extern uniform vector<unorm float, 4> Pixels_0000[64 * 64] <string Quadrant="Second";>;
+        extern uniform vector<unorm float, 4> Pixels_0001[64 * 64] <string Quadrant="Second";>;
 
         class HomogenousSpace VSMain(vector<float, 4> Position :position, vector<float, 2> Coordinates :texcoord) {
           class HomogenousSpace Result;
@@ -95,7 +95,7 @@ Shader "Ophura/Projection" {
             discard; return vector<unorm float, 4>(1.0F, 1.0F, 1.0F, 1.0F);
           }
 
-          return Pixels_0000[mad(Quadrant.y, 64U, Quadrant.x - 64U)];
+          return Pixels_0001[mad(Quadrant.y, 64U, Quadrant.x - 64U)];
         }
       ENDHLSL
     }
@@ -106,7 +106,7 @@ Shader "Ophura/Projection" {
         "LightMode" = "Always"
       }
       HLSLPROGRAM
-        extern uniform vector<unorm float, 4> Pixels_0000[64 * 64] <string Quadrant="Third";>;
+        extern uniform vector<unorm float, 4> Pixels_0002[64 * 64] <string Quadrant="Third";>;
 
         class HomogenousSpace VSMain(vector<float, 4> Position :position, vector<float, 2> Coordinates :texcoord) {
           class HomogenousSpace Result;
@@ -126,18 +126,18 @@ Shader "Ophura/Projection" {
             discard; return vector<unorm float, 4>(1.0F, 1.0F, 1.0F, 1.0F);
           }
 
-          return Pixels_0000[mad(Quadrant.y - 64U, 64U, Quadrant.x)];
+          return Pixels_0002[mad(Quadrant.y - 64U, 64U, Quadrant.x)];
         }
       ENDHLSL
     }
 
     Pass {
-      Name "0002"
+      Name "0003"
       Tags {
         "LightMode" = "Always"
       }
       HLSLPROGRAM
-        extern uniform vector<unorm float, 4> Pixels_0000[64 * 64] <string Quadrant="Fourth";>;
+        extern uniform vector<unorm float, 4> Pixels_0003[64 * 64] <string Quadrant="Fourth";>;
 
         class HomogenousSpace VSMain(vector<float, 4> Position :position, vector<float, 2> Coordinates :texcoord) {
           class HomogenousSpace Result;
@@ -157,7 +157,7 @@ Shader "Ophura/Projection" {
             discard; return vector<unorm float, 4>(1.0F, 1.0F, 1.0F, 1.0F);
           }
 
-          return Pixels_0000[mad(Quadrant.y - 64U, 64U, Quadrant.x - 64U)];
+          return Pixels_0003[mad(Quadrant.y - 64U, 64U, Quadrant.x - 64U)];
         }
       ENDHLSL
     }
