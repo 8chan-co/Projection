@@ -5,22 +5,26 @@ Shader "Ophura/Projection" {
     Pixels_0002 ("Pixels 0002", Color) = (1.0, 1.0, 1.0, 1.0)
     Pixels_0003 ("Pixels 0003", Color) = (1.0, 1.0, 1.0, 1.0)
   }
+  //CustomEditor "Totally"
   SubShader {
     Tags {
       "Queue" = "Geometry"
       "RenderType" = "Opaque"
+      "ForceNoShadowCasting" = "True"
+      "DisableBatching" = "True"
+      "IgnoreProjector" = "True"
       "PreviewType" = "Plane"
     }
 
     HLSLINCLUDE
-      #pragma vertex VertexProgram
-      #pragma fragment PixelProgram
+      #pragma vertex VSMain
+      #pragma fragment PSMain
 
       #include <UnityShaderVariables.cginc>
 
       class HomogenousSpace {
-        vector<float, 4> Coordinates: texcoord;
-        vector<float, 4> Position: sv_position;
+        vector<float, 2> Coordinates :texcoord;
+        vector<float, 4> Position :sv_position;
       };
 
       #define __intrinsic inline static
@@ -40,27 +44,27 @@ Shader "Ophura/Projection" {
         "LightMode" = "Always"
       }
       HLSLPROGRAM
-        extern uniform vector<unorm float, 4> Pixels_0000[32 * 32] <string Quadrant="First";>;
+        extern uniform vector<unorm float, 4> Pixels_0000[64 * 64] <string Quadrant="First";>;
 
-        HomogenousSpace VertexProgram(in vector<float, 4> Position: position, in vector<float, 4> Coordinates: texcoord) {
-          HomogenousSpace Result;
+        class HomogenousSpace VSMain(vector<float, 4> Position :position, vector<float, 2> Coordinates :texcoord) {
+          class HomogenousSpace Result;
 
-          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
+          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
 
           Coordinates.y = invert(Coordinates.y);
-          Result.Coordinates = vector<float, 4>(Coordinates.xy * 64.0F, Coordinates.zw);
+          Result.Coordinates = Coordinates.xy * 128.0F;
 
           return Result;
         }
 
-        vector<unorm float, 4> PixelProgram(in vector<float, 4> Coordinates: texcoord): sv_target {
+        vector<unorm float, 4> PSMain(vector<float, 4> Coordinates :texcoord): sv_target {
           vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates.xy);
 
-          if (Quadrant.x >= 32U || Quadrant.y >= 32U) {
-            discard; // NOTE: execution continues after this, should consider returning as well?
+          if (Quadrant.x >= 64U || Quadrant.y >= 64U) {
+            discard; return vector<unorm float, 4>(1.0F, 1.0F, 1.0F, 1.0F);
           }
 
-          return Pixels_0000[mad(Quadrant.y, 32U, Quadrant.x)];
+          return Pixels_0000[mad(Quadrant.y, 64U, Quadrant.x)];
         }
       ENDHLSL
     }
@@ -71,27 +75,27 @@ Shader "Ophura/Projection" {
         "LightMode" = "Always"
       }
       HLSLPROGRAM
-        extern uniform vector<unorm float, 4> Pixels_0001[32 * 32] <string Quadrant="Second";>;
+        extern uniform vector<unorm float, 4> Pixels_0000[64 * 64] <string Quadrant="Second";>;
 
-        HomogenousSpace VertexProgram(in vector<float, 4> Position: position, in vector<float, 4> Coordinates: texcoord) {
-          HomogenousSpace Result;
+        class HomogenousSpace VSMain(vector<float, 4> Position :position, vector<float, 2> Coordinates :texcoord) {
+          class HomogenousSpace Result;
 
-          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
+          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
 
           Coordinates.y = invert(Coordinates.y);
-          Result.Coordinates = vector<float, 4>(Coordinates.xy * 64.0F, Coordinates.zw);
+          Result.Coordinates = Coordinates.xy * 128.0F;
 
           return Result;
         }
 
-        vector<unorm float, 4> PixelProgram(in vector<float, 4> Coordinates: texcoord): sv_target {
+        vector<unorm float, 4> PSMain(vector<float, 4> Coordinates :texcoord): sv_target {
           vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates.xy);
 
-          if (Quadrant.x < 32U || Quadrant.y >= 32U) {
-            discard; // NOTE: execution continues after this, should consider returning as well?
+          if (Quadrant.x < 64U || Quadrant.y >= 64U) {
+            discard; return vector<unorm float, 4>(1.0F, 1.0F, 1.0F, 1.0F);
           }
 
-          return Pixels_0001[mad(Quadrant.y, 32U, Quadrant.x - 32U)];
+          return Pixels_0000[mad(Quadrant.y, 64U, Quadrant.x - 64U)];
         }
       ENDHLSL
     }
@@ -102,58 +106,58 @@ Shader "Ophura/Projection" {
         "LightMode" = "Always"
       }
       HLSLPROGRAM
-        extern uniform vector<unorm float, 4> Pixels_0002[32 * 32] <string Quadrant="Third";>;
+        extern uniform vector<unorm float, 4> Pixels_0000[64 * 64] <string Quadrant="Third";>;
 
-        HomogenousSpace VertexProgram(in vector<float, 4> Position: position, in vector<float, 4> Coordinates: texcoord) {
-          HomogenousSpace Result;
+        class HomogenousSpace VSMain(vector<float, 4> Position :position, vector<float, 2> Coordinates :texcoord) {
+          class HomogenousSpace Result;
 
-          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
+          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
 
           Coordinates.y = invert(Coordinates.y);
-          Result.Coordinates = vector<float, 4>(Coordinates.xy * 64.0F, Coordinates.zw);
+          Result.Coordinates = Coordinates.xy * 128.0F;
 
           return Result;
         }
 
-        vector<unorm float, 4> PixelProgram(in vector<float, 4> Coordinates: texcoord): sv_target {
+        vector<unorm float, 4> PSMain(vector<float, 4> Coordinates :texcoord): sv_target {
           vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates.xy);
 
-          if (Quadrant.x >= 32U || Quadrant.y < 32U) {
-            discard; // NOTE: execution continues after this, should consider returning as well?
+          if (Quadrant.x >= 64U || Quadrant.y < 64U) {
+            discard; return vector<unorm float, 4>(1.0F, 1.0F, 1.0F, 1.0F);
           }
 
-          return Pixels_0002[mad(Quadrant.y - 32U, 32U, Quadrant.x)];
+          return Pixels_0000[mad(Quadrant.y - 64U, 64U, Quadrant.x)];
         }
       ENDHLSL
     }
 
     Pass {
-      Name "0003"
+      Name "0002"
       Tags {
         "LightMode" = "Always"
       }
       HLSLPROGRAM
-        extern uniform vector<unorm float, 4> Pixels_0003[32 * 32] <string Quadrant="Fourth";>;
+        extern uniform vector<unorm float, 4> Pixels_0000[64 * 64] <string Quadrant="Fourth";>;
 
-        HomogenousSpace VertexProgram(in vector<float, 4> Position: position, in vector<float, 4> Coordinates: texcoord) {
-          HomogenousSpace Result;
+        class HomogenousSpace VSMain(vector<float, 4> Position :position, vector<float, 2> Coordinates :texcoord) {
+          class HomogenousSpace Result;
 
-          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, vector<float, 4>(Position.xyz, 1.0F)));
+          Result.Position = mul(UNITY_MATRIX_VP, mul(UNITY_MATRIX_M, Position));
 
           Coordinates.y = invert(Coordinates.y);
-          Result.Coordinates = vector<float, 4>(Coordinates.xy * 64.0F, Coordinates.zw);
+          Result.Coordinates = Coordinates.xy * 128.0F;
 
           return Result;
         }
 
-        vector<unorm float, 4> PixelProgram(in vector<float, 4> Coordinates: texcoord): sv_target {
+        vector<unorm float, 4> PSMain(vector<float, 4> Coordinates :texcoord): sv_target {
           vector<uint, 2> Quadrant = vector<uint, 2>(Coordinates.xy);
 
-          if (Quadrant.x < 32U || Quadrant.y < 32U) {
-            discard; // NOTE: execution continues after this, should consider returning as well?
+          if (Quadrant.x < 64U || Quadrant.y < 64U) {
+            discard; return vector<unorm float, 4>(1.0F, 1.0F, 1.0F, 1.0F);
           }
 
-          return Pixels_0003[mad(Quadrant.y - 32U, 32U, Quadrant.x - 32U)];
+          return Pixels_0000[mad(Quadrant.y - 64U, 64U, Quadrant.x - 64U)];
         }
       ENDHLSL
     }
